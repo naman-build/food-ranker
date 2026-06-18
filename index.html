@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -21,10 +22,10 @@
       --amber: #d97706;
       --amber-light: #fef3c7;
       --amber-mid: #f59e0b;
-      --green: #16a34a;
-      --green-light: #dcfce7;
       --red-light: #fee2e2;
       --red: #dc2626;
+      --blue: #2563eb;
+      --blue-light: #eff6ff;
       --radius: 12px;
       --radius-sm: 8px;
     }
@@ -39,428 +40,155 @@
         --text-secondary: #9e9d97;
         --text-tertiary: #6b6a65;
         --amber-light: #2d2005;
-        --green-light: #052010;
         --red-light: #200505;
+        --blue: #60a5fa;
+        --blue-light: #0d1f3c;
       }
     }
 
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      line-height: 1.6;
-    }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }
 
-    header {
-      border-bottom: 0.5px solid var(--border);
-      padding: 1.25rem 0;
-      background: var(--surface);
-      position: sticky; top: 0; z-index: 10;
-    }
+    header { border-bottom: 0.5px solid var(--border); padding: 1.25rem 0; background: var(--surface); position: sticky; top: 0; z-index: 10; }
+    .header-inner { max-width: 720px; margin: 0 auto; padding: 0 1.5rem; display: flex; align-items: center; gap: 12px; }
+    .header-icon { width: 36px; height: 36px; background: var(--amber-light); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: var(--amber); font-size: 18px; }
+    header h1 { font-size: 17px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
+    header p { font-size: 13px; color: var(--text-secondary); }
 
-    .header-inner {
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 0 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    .sync-dot { margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-tertiary); }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: #9e9e99; }
+    .dot.live { background: #16a34a; }
+    .dot.error { background: var(--red); }
 
-    .header-icon {
-      width: 36px; height: 36px;
-      background: var(--amber-light);
-      border-radius: var(--radius-sm);
-      display: flex; align-items: center; justify-content: center;
-      color: var(--amber);
-      font-size: 18px;
-    }
+    main { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem; }
 
-    header h1 {
-      font-size: 17px;
-      font-weight: 600;
-      color: var(--text);
-      letter-spacing: -0.01em;
-    }
+    .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem; }
+    .card-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1.25rem; }
 
-    header p {
-      font-size: 13px;
-      color: var(--text-secondary);
-    }
-
-    main {
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 2rem 1.5rem;
-    }
-
-    .card {
-      background: var(--surface);
-      border: 0.5px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .card-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-bottom: 1.25rem;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    @media (max-width: 520px) {
-      .form-grid { grid-template-columns: 1fr; }
-    }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    @media (max-width: 520px) { .form-grid { grid-template-columns: 1fr; } }
 
     .field { display: flex; flex-direction: column; gap: 6px; }
     .field.full { grid-column: 1 / -1; }
 
-    label {
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--text-secondary);
-      letter-spacing: 0.02em;
-    }
+    label { font-size: 12px; font-weight: 500; color: var(--text-secondary); letter-spacing: 0.02em; }
+    .label-row { display: flex; align-items: center; gap: 6px; }
+    .optional-tag { font-size: 10px; color: var(--text-tertiary); font-weight: 400; }
 
     input, textarea, select {
-      font-family: 'Inter', system-ui, sans-serif;
-      font-size: 14px;
-      color: var(--text);
-      background: var(--bg);
-      border: 0.5px solid var(--border-strong);
-      border-radius: var(--radius-sm);
-      padding: 9px 12px;
-      width: 100%;
-      outline: none;
-      transition: border-color 0.15s;
+      font-family: 'Inter', system-ui, sans-serif; font-size: 14px; color: var(--text);
+      background: var(--bg); border: 0.5px solid var(--border-strong);
+      border-radius: var(--radius-sm); padding: 9px 12px; width: 100%; outline: none; transition: border-color 0.15s;
     }
 
-    input:focus, textarea:focus, select:focus {
-      border-color: var(--amber-mid);
-      box-shadow: 0 0 0 3px rgba(245,158,11,0.12);
-    }
-
+    input:focus, textarea:focus, select:focus { border-color: var(--amber-mid); box-shadow: 0 0 0 3px rgba(245,158,11,0.12); }
     textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
 
-    .rating-label {
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--text-secondary);
-      letter-spacing: 0.02em;
-      display: block;
-      margin-bottom: 10px;
-    }
-
+    .rating-label { font-size: 12px; font-weight: 500; color: var(--text-secondary); letter-spacing: 0.02em; display: block; margin-bottom: 10px; }
     .star-row { display: flex; gap: 4px; align-items: center; }
-
-    .star-btn {
-      background: none; border: none; cursor: pointer;
-      font-size: 32px; line-height: 1; padding: 2px 4px;
-      color: var(--border-strong);
-      transition: transform 0.1s, color 0.1s;
-      border-radius: 4px;
-    }
-
+    .star-btn { background: none; border: none; cursor: pointer; font-size: 32px; line-height: 1; padding: 2px 4px; color: var(--border-strong); transition: transform 0.1s, color 0.1s; border-radius: 4px; }
     .star-btn:hover { transform: scale(1.2); }
     .star-btn.lit { color: var(--amber-mid); }
+    .star-descriptor { font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-left: 10px; min-width: 90px; }
 
-    .star-descriptor {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text-secondary);
-      margin-left: 10px;
-      min-width: 90px;
-    }
-
-    .add-btn {
-      width: 100%;
-      padding: 11px;
-      background: var(--text);
-      color: var(--bg);
-      border: none;
-      border-radius: var(--radius-sm);
-      font-family: 'Inter', system-ui, sans-serif;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      margin-top: 16px;
-      transition: opacity 0.15s;
-    }
-
+    .add-btn { width: 100%; padding: 11px; background: var(--text); color: var(--bg); border: none; border-radius: var(--radius-sm); font-family: 'Inter', system-ui, sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 16px; transition: opacity 0.15s; }
     .add-btn:hover { opacity: 0.82; }
+    .add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    .controls {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 1.25rem;
-      flex-wrap: wrap;
-    }
+    .controls { display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem; flex-wrap: wrap; }
+    .controls-label { font-size: 13px; color: var(--text-secondary); }
+    .controls select { width: auto; padding: 7px 10px; font-size: 13px; }
 
-    .controls-label {
-      font-size: 13px;
-      color: var(--text-secondary);
-    }
-
-    .controls select {
-      width: auto;
-      padding: 7px 10px;
-      font-size: 13px;
-    }
-
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-bottom: 1.5rem;
-    }
-
-    .stat-box {
-      background: var(--surface);
-      border: 0.5px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 12px 14px;
-      text-align: center;
-    }
-
-    .stat-num {
-      font-size: 22px;
-      font-weight: 600;
-      color: var(--text);
-      letter-spacing: -0.02em;
-      display: block;
-    }
-
-    .stat-lbl {
-      font-size: 11px;
-      color: var(--text-tertiary);
-      margin-top: 2px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+    .stat-box { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; text-align: center; }
+    .stat-num { font-size: 22px; font-weight: 600; color: var(--text); letter-spacing: -0.02em; display: block; }
+    .stat-lbl { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
 
     .vendor-list { display: flex; flex-direction: column; gap: 12px; }
 
-    .vendor-card {
-      background: var(--surface);
-      border: 0.5px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.1rem 1.25rem;
-      transition: border-color 0.15s;
-    }
-
+    .vendor-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1.1rem 1.25rem; }
     .vendor-card.gold-border { border: 2px solid var(--amber-mid); }
 
-    .vendor-top-row {
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-    }
-
-    .rank-badge {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-tertiary);
-      min-width: 24px;
-      padding-top: 2px;
-    }
-
+    .vendor-top-row { display: flex; align-items: flex-start; gap: 14px; }
+    .rank-badge { font-size: 13px; font-weight: 600; color: var(--text-tertiary); min-width: 24px; padding-top: 2px; }
     .vendor-body { flex: 1; min-width: 0; }
+    .vendor-name-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .vendor-name { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
+    .top-badge { font-size: 10px; font-weight: 600; background: var(--amber-light); color: var(--amber); padding: 2px 8px; border-radius: 99px; letter-spacing: 0.04em; text-transform: uppercase; }
 
-    .vendor-name-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
+    .vendor-dish { font-size: 13px; color: var(--text-secondary); margin-top: 3px; display: flex; align-items: center; gap: 5px; }
+    .vendor-addr { font-size: 12px; color: var(--text-tertiary); margin-top: 4px; display: flex; align-items: center; gap: 5px; }
+    .vendor-link { margin-top: 5px; display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--blue); text-decoration: none; background: var(--blue-light); padding: 3px 9px; border-radius: 99px; font-weight: 500; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .vendor-link:hover { opacity: 0.8; }
 
-    .vendor-name {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text);
-      letter-spacing: -0.01em;
-    }
-
-    .top-badge {
-      font-size: 10px;
-      font-weight: 600;
-      background: var(--amber-light);
-      color: var(--amber);
-      padding: 2px 8px;
-      border-radius: 99px;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-
-    .vendor-dish {
-      font-size: 13px;
-      color: var(--text-secondary);
-      margin-top: 3px;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .vendor-addr {
-      font-size: 12px;
-      color: var(--text-tertiary);
-      margin-top: 4px;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .vendor-right {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-
-    .stars-display {
-      display: flex;
-      gap: 2px;
-    }
-
+    .vendor-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
+    .stars-display { display: flex; gap: 2px; }
     .s { font-size: 16px; }
     .s.on { color: var(--amber-mid); }
     .s.off { color: var(--border-strong); }
+    .score-txt { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
 
-    .score-txt {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-secondary);
-    }
-
-    .del-btn {
-      background: none; border: none; cursor: pointer;
-      color: var(--text-tertiary);
-      font-size: 16px;
-      padding: 2px;
-      border-radius: 4px;
-      line-height: 1;
-    }
-
+    .del-btn { background: none; border: none; cursor: pointer; color: var(--text-tertiary); font-size: 16px; padding: 2px; border-radius: 4px; line-height: 1; }
     .del-btn:hover { color: var(--red); background: var(--red-light); }
 
-    .bar-wrap {
-      margin-top: 10px;
-      height: 5px;
-      background: var(--border);
-      border-radius: 3px;
-      overflow: hidden;
-    }
+    .bar-wrap { margin-top: 10px; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 3px; background: var(--amber-mid); transition: width 0.5s ease; }
 
-    .bar-fill {
-      height: 100%;
-      border-radius: 3px;
-      background: var(--amber-mid);
-      transition: width 0.5s ease;
-    }
+    .vendor-notes { font-size: 13px; color: var(--text-secondary); font-style: italic; margin-top: 10px; padding-top: 10px; border-top: 0.5px solid var(--border); line-height: 1.5; }
 
-    .vendor-notes {
-      font-size: 13px;
-      color: var(--text-secondary);
-      font-style: italic;
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 0.5px solid var(--border);
-      line-height: 1.5;
-    }
-
-    .empty {
-      text-align: center;
-      padding: 4rem 1rem;
-      color: var(--text-tertiary);
-    }
-
+    .empty { text-align: center; padding: 4rem 1rem; color: var(--text-tertiary); }
     .empty i { font-size: 48px; display: block; margin-bottom: 12px; }
     .empty p { font-size: 14px; }
 
-    .toast {
-      position: fixed;
-      bottom: 1.5rem;
-      left: 50%;
-      transform: translateX(-50%) translateY(80px);
-      background: var(--text);
-      color: var(--bg);
-      padding: 10px 20px;
-      border-radius: 99px;
-      font-size: 13px;
-      font-weight: 500;
-      opacity: 0;
-      transition: transform 0.25s, opacity 0.25s;
-      pointer-events: none;
-      z-index: 100;
-      white-space: nowrap;
-    }
+    .loading { text-align: center; padding: 3rem 1rem; color: var(--text-tertiary); font-size: 14px; }
 
-    .toast.show {
-      transform: translateX(-50%) translateY(0);
-      opacity: 1;
-    }
+    .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--text); color: var(--bg); padding: 10px 20px; border-radius: 99px; font-size: 13px; font-weight: 500; opacity: 0; transition: transform 0.25s, opacity 0.25s; pointer-events: none; z-index: 100; white-space: nowrap; }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-    .export-btn {
-      background: none;
-      border: 0.5px solid var(--border-strong);
-      border-radius: var(--radius-sm);
-      padding: 7px 14px;
-      font-family: 'Inter', system-ui, sans-serif;
-      font-size: 13px;
-      color: var(--text-secondary);
-      cursor: pointer;
-      display: flex; align-items: center; gap: 6px;
-      transition: background 0.12s;
-      margin-left: auto;
-    }
-
+    .export-btn { background: none; border: 0.5px solid var(--border-strong); border-radius: var(--radius-sm); padding: 7px 14px; font-family: 'Inter', system-ui, sans-serif; font-size: 13px; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.12s; margin-left: auto; }
     .export-btn:hover { background: var(--border); }
+
+    .love-footer { text-align: center; padding: 2.5rem 1rem 1rem; font-size: 14px; color: var(--text-tertiary); }
   </style>
 </head>
 <body>
 
 <header>
   <div class="header-inner">
-    <div class="header-icon">
-      <i class="ti ti-tools-kitchen-2" aria-hidden="true"></i>
-    </div>
+    <div class="header-icon"><i class="ti ti-tools-kitchen-2" aria-hidden="true"></i></div>
     <div>
       <h1>Food &amp; Drink Ranker</h1>
       <p>Rate vendors, dishes, and find your favourites</p>
+    </div>
+    <div class="sync-dot">
+      <div class="dot" id="dot"></div>
+      <span id="sync-label">Connecting…</span>
     </div>
   </div>
 </header>
 
 <main>
 
-  <!-- Add form -->
   <div class="card">
     <p class="card-title">Add a vendor</p>
     <div class="form-grid">
       <div class="field">
         <label for="v-name">Vendor / restaurant name</label>
-        <input id="v-name" type="text" placeholder="e.g. Bun House">
+        <input id="v-name" type="text" placeholder="e.g. Din Tai Fung">
       </div>
       <div class="field">
         <label for="v-dish">Dish / item</label>
-        <input id="v-dish" type="text" placeholder="e.g. char siu bun">
+        <input id="v-dish" type="text" placeholder="e.g. Xiao Long Bao">
       </div>
       <div class="field full">
         <label for="v-addr">Address</label>
-        <input id="v-addr" type="text" placeholder="e.g. 26A Greek St, Soho, London">
+        <input id="v-addr" type="text" placeholder="e.g. Level 4, Selfridges, 400 Oxford St, London W1A 1AB">
+      </div>
+      <div class="field full">
+        <div class="label-row">
+          <label for="v-link">Link</label>
+          <span class="optional-tag">optional</span>
+        </div>
+        <input id="v-link" type="url" placeholder="e.g. https://dintaifung-uk.com">
       </div>
     </div>
 
@@ -476,17 +204,19 @@
 
     <div class="form-grid" style="margin-top: 14px; margin-bottom: 0;">
       <div class="field full">
-        <label for="v-notes">Notes (optional)</label>
+        <div class="label-row">
+          <label for="v-notes">Notes</label>
+          <span class="optional-tag">optional</span>
+        </div>
         <textarea id="v-notes" placeholder="What stood out? Ambience, value, portion size…"></textarea>
       </div>
     </div>
 
-    <button class="add-btn" onclick="addVendor()">
+    <button class="add-btn" id="add-btn" onclick="addVendor()">
       <i class="ti ti-plus" aria-hidden="true"></i> Add to list
     </button>
   </div>
 
-  <!-- Stats -->
   <div id="stats-section" style="display:none">
     <div class="stats-row">
       <div class="stat-box">
@@ -504,7 +234,6 @@
     </div>
   </div>
 
-  <!-- Controls -->
   <div id="controls-section" style="display:none">
     <div class="controls">
       <span class="controls-label">Sort by</span>
@@ -519,23 +248,29 @@
     </div>
   </div>
 
-  <!-- List -->
+  <div id="loading" class="loading">Loading…</div>
   <div class="vendor-list" id="vendor-list"></div>
-
-  <!-- Empty state -->
-  <div class="empty" id="empty-state">
+  <div class="empty" id="empty-state" style="display:none">
     <i class="ti ti-bowl-chopsticks" aria-hidden="true"></i>
     <p>No vendors yet — add one above to start your list.</p>
   </div>
+
+  <div class="love-footer">anh iu em ❤️</div>
 
 </main>
 
 <div class="toast" id="toast"></div>
 
 <script>
+  const SUPABASE_URL = 'https://njwalyinjkgacbjceqte.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_l00qZzx5erAf278gt2J0Ew_VdJ3PoIY';
+
+  const { createClient } = supabase;
+  const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
   const LABELS = ['', 'Poor', 'Okay', 'Good', 'Great', 'Outstanding'];
   let rating = 0;
-  let vendors = JSON.parse(localStorage.getItem('food-vendors') || '[]');
+  let vendors = [];
 
   const starBtns = document.querySelectorAll('.star-btn');
   const starDesc = document.getElementById('star-desc');
@@ -552,13 +287,15 @@
 
   function lightStars(val, perm) {
     starBtns.forEach(b => b.classList.toggle('lit', +b.dataset.val <= val));
-    if (!perm) {
-      starDesc.textContent = val > 0 ? LABELS[val] : (rating > 0 ? LABELS[rating] : 'Tap to rate');
-    }
+    if (!perm) starDesc.textContent = val > 0 ? LABELS[val] : (rating > 0 ? LABELS[rating] : 'Tap to rate');
   }
 
-  function save() {
-    localStorage.setItem('food-vendors', JSON.stringify(vendors));
+  function setStatus(state) {
+    const dot = document.getElementById('dot');
+    const label = document.getElementById('sync-label');
+    if (state === 'live') { dot.className = 'dot live'; label.textContent = 'Live'; }
+    else if (state === 'error') { dot.className = 'dot error'; label.textContent = 'Offline'; }
+    else { dot.className = 'dot'; label.textContent = 'Connecting…'; }
   }
 
   function toast(msg) {
@@ -568,19 +305,47 @@
     setTimeout(() => el.classList.remove('show'), 2200);
   }
 
-  function addVendor() {
+  async function loadVendors() {
+    const { data, error } = await db.from('vendors').select('*').order('added', { ascending: false });
+    if (error) { setStatus('error'); console.error(error); return; }
+    vendors = data || [];
+    setStatus('live');
+    document.getElementById('loading').style.display = 'none';
+    renderList();
+  }
+
+  function normaliseLink(raw) {
+    if (!raw) return '';
+    raw = raw.trim();
+    if (!raw) return '';
+    if (!/^https?:\/\//i.test(raw)) raw = 'https://' + raw;
+    try { new URL(raw); return raw; } catch { return ''; }
+  }
+
+  async function addVendor() {
     const name = document.getElementById('v-name').value.trim();
     const dish = document.getElementById('v-dish').value.trim();
     const addr = document.getElementById('v-addr').value.trim();
     const notes = document.getElementById('v-notes').value.trim();
+    const link = normaliseLink(document.getElementById('v-link').value);
     if (!name) { alert('Please enter a vendor name.'); return; }
     if (!rating) { alert('Please select a rating.'); return; }
-    vendors.push({ id: Date.now(), name, dish, addr, notes, rating, added: Date.now() });
-    save();
-    document.getElementById('v-name').value = '';
-    document.getElementById('v-dish').value = '';
-    document.getElementById('v-addr').value = '';
-    document.getElementById('v-notes').value = '';
+
+    const btn = document.getElementById('add-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ti ti-loader" aria-hidden="true"></i> Saving…';
+
+    const { data, error } = await db.from('vendors').insert([{
+      name, dish, addr, notes, link, rating, added: Date.now()
+    }]).select();
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-plus" aria-hidden="true"></i> Add to list';
+
+    if (error) { alert('Error saving vendor: ' + error.message); return; }
+
+    vendors.unshift(data[0]);
+    ['v-name','v-dish','v-addr','v-link','v-notes'].forEach(id => document.getElementById(id).value = '');
     rating = 0;
     lightStars(0, true);
     starDesc.textContent = 'Tap to rate';
@@ -588,22 +353,20 @@
     toast('Vendor added ✓');
   }
 
-  function removeVendor(id) {
+  async function removeVendor(id) {
     if (!confirm('Remove this vendor?')) return;
+    const { error } = await db.from('vendors').delete().eq('id', id);
+    if (error) { alert('Error removing vendor.'); return; }
     vendors = vendors.filter(v => v.id !== id);
-    save();
     renderList();
     toast('Vendor removed');
   }
 
   function exportCSV() {
     if (!vendors.length) return;
-    const rows = [['Rank','Name','Dish','Address','Rating','Notes']];
-    const sorted = getSorted();
-    sorted.forEach((v, i) => {
-      rows.push([i+1, v.name, v.dish, v.addr, v.rating + '/5', v.notes]);
-    });
-    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const rows = [['Rank','Name','Dish','Address','Rating','Link','Notes']];
+    getSorted().forEach((v, i) => rows.push([i+1, v.name, v.dish, v.addr, v.rating+'/5', v.link||'', v.notes||'']));
+    const csv = rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -644,9 +407,13 @@
     document.getElementById('vendor-list').innerHTML = sorted.map((v, i) => {
       const isTop = isByRating && i === 0 && vendors.length > 1;
       const pct = (v.rating / 5 * 100).toFixed(0);
-      const stars = [1,2,3,4,5].map(s =>
-        `<span class="s ${s <= v.rating ? 'on' : 'off'}">★</span>`
-      ).join('');
+      const stars = [1,2,3,4,5].map(s => `<span class="s ${s <= v.rating ? 'on' : 'off'}">★</span>`).join('');
+
+      let linkLabel = '';
+      if (v.link) {
+        try { linkLabel = new URL(v.link).hostname.replace(/^www\./, ''); } catch { linkLabel = v.link; }
+      }
+
       return `
         <div class="vendor-card ${isTop ? 'gold-border' : ''}">
           <div class="vendor-top-row">
@@ -658,6 +425,7 @@
               </div>
               ${v.dish ? `<div class="vendor-dish"><i class="ti ti-tools-kitchen-2" style="font-size:13px" aria-hidden="true"></i> ${esc(v.dish)}</div>` : ''}
               ${v.addr ? `<div class="vendor-addr"><i class="ti ti-map-pin" style="font-size:12px" aria-hidden="true"></i> ${esc(v.addr)}</div>` : ''}
+              ${v.link ? `<a class="vendor-link" href="${esc(v.link)}" target="_blank" rel="noopener noreferrer"><i class="ti ti-external-link" style="font-size:11px" aria-hidden="true"></i>${esc(linkLabel)}</a>` : ''}
             </div>
             <div class="vendor-right">
               <div class="stars-display">${stars}</div>
@@ -673,7 +441,11 @@
     }).join('');
   }
 
-  renderList();
+  loadVendors();
+
+  db.channel('vendors-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'vendors' }, () => { loadVendors(); })
+    .subscribe();
 </script>
 </body>
 </html>
