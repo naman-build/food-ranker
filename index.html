@@ -391,7 +391,7 @@
   /* ─── Config ─── */
   const SUPABASE_URL = 'https://njwalyinjkgacbjceqte.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_l00qZzx5erAf278gt2J0Ew_VdJ3PoIY';
-  const PASSWORD     = '2709';
+  const PASSWORD_HASH = 'f652f5c87c84f33899f9be3b2f62607ce5b61c68cac1f70bb4cdbb40d79b6904';
 
   const { createClient } = supabase;
   const db = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -441,10 +441,33 @@
     document.getElementById('modal-overlay').classList.add('hidden');
   }
 
-  function submitPassword() {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  async function hashString(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  async function submitPassword() {
     const val   = document.getElementById('pw-input').value;
     const input = document.getElementById('pw-input');
-    if (val === PASSWORD) {
+    const hash  = await hashString(val);
+    if (hash === PASSWORD_HASH) {
       unlocked = true;
       sessionStorage.setItem('fr_unlocked', '1');
       closeModal();
