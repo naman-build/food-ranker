@@ -69,7 +69,6 @@
 
     .field { display: flex; flex-direction: column; gap: 6px; }
     .field.full { grid-column: 1 / -1; }
-
     label { font-size: 12px; font-weight: 500; color: var(--text-secondary); letter-spacing: 0.02em; }
     .label-row { display: flex; align-items: center; gap: 6px; }
     .optional-tag { font-size: 10px; color: var(--text-tertiary); font-weight: 400; }
@@ -79,15 +78,40 @@
       background: var(--bg); border: 0.5px solid var(--border-strong);
       border-radius: var(--radius-sm); padding: 9px 12px; width: 100%; outline: none; transition: border-color 0.15s;
     }
-
     input:focus, textarea:focus, select:focus { border-color: var(--amber-mid); box-shadow: 0 0 0 3px rgba(245,158,11,0.12); }
     textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
 
     .rating-label { font-size: 12px; font-weight: 500; color: var(--text-secondary); letter-spacing: 0.02em; display: block; margin-bottom: 10px; }
-    .star-row { display: flex; gap: 4px; align-items: center; }
-    .star-btn { background: none; border: none; cursor: pointer; font-size: 32px; line-height: 1; padding: 2px 4px; color: var(--border-strong); transition: transform 0.1s, color 0.1s; border-radius: 4px; }
-    .star-btn:hover { transform: scale(1.2); }
-    .star-btn.lit { color: var(--amber-mid); }
+
+    /* Half-star rating widget */
+    .star-row { display: flex; align-items: center; gap: 2px; }
+
+    .star-wrap {
+      position: relative;
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .star-wrap svg {
+      width: 36px;
+      height: 36px;
+      display: block;
+    }
+
+    .star-half-left,
+    .star-half-right {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      width: 50%;
+      cursor: pointer;
+    }
+
+    .star-half-left  { left: 0; }
+    .star-half-right { right: 0; }
+
     .star-descriptor { font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-left: 10px; min-width: 90px; }
 
     .add-btn { width: 100%; padding: 11px; background: var(--text); color: var(--bg); border: none; border-radius: var(--radius-sm); font-family: 'Inter', system-ui, sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 16px; transition: opacity 0.15s; }
@@ -104,7 +128,6 @@
     .stat-lbl { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
 
     .vendor-list { display: flex; flex-direction: column; gap: 12px; }
-
     .vendor-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1.1rem 1.25rem; }
     .vendor-card.gold-border { border: 2px solid var(--amber-mid); }
 
@@ -120,11 +143,7 @@
     .vendor-link { margin-top: 5px; display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--blue); text-decoration: none; background: var(--blue-light); padding: 3px 9px; border-radius: 99px; font-weight: 500; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .vendor-link:hover { opacity: 0.8; }
 
-    .vendor-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
-    .stars-display { display: flex; gap: 2px; }
-    .s { font-size: 16px; }
-    .s.on { color: var(--amber-mid); }
-    .s.off { color: var(--border-strong); }
+    .vendor-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
     .score-txt { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
 
     .del-btn { background: none; border: none; cursor: pointer; color: var(--text-tertiary); font-size: 16px; padding: 2px; border-radius: 4px; line-height: 1; }
@@ -138,7 +157,6 @@
     .empty { text-align: center; padding: 4rem 1rem; color: var(--text-tertiary); }
     .empty i { font-size: 48px; display: block; margin-bottom: 12px; }
     .empty p { font-size: 14px; }
-
     .loading { text-align: center; padding: 3rem 1rem; color: var(--text-tertiary); font-size: 14px; }
 
     .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--text); color: var(--bg); padding: 10px 20px; border-radius: 99px; font-size: 13px; font-weight: 500; opacity: 0; transition: transform 0.25s, opacity 0.25s; pointer-events: none; z-index: 100; white-space: nowrap; }
@@ -194,11 +212,7 @@
 
     <span class="rating-label">Your rating</span>
     <div class="star-row" id="star-row" role="group" aria-label="Star rating">
-      <button class="star-btn" data-val="1" aria-label="1 star">★</button>
-      <button class="star-btn" data-val="2" aria-label="2 stars">★</button>
-      <button class="star-btn" data-val="3" aria-label="3 stars">★</button>
-      <button class="star-btn" data-val="4" aria-label="4 stars">★</button>
-      <button class="star-btn" data-val="5" aria-label="5 stars">★</button>
+      <!-- stars injected by JS -->
       <span class="star-descriptor" id="star-desc">Tap to rate</span>
     </div>
 
@@ -219,18 +233,9 @@
 
   <div id="stats-section" style="display:none">
     <div class="stats-row">
-      <div class="stat-box">
-        <span class="stat-num" id="stat-count">0</span>
-        <span class="stat-lbl">Vendors</span>
-      </div>
-      <div class="stat-box">
-        <span class="stat-num" id="stat-avg">—</span>
-        <span class="stat-lbl">Avg rating</span>
-      </div>
-      <div class="stat-box">
-        <span class="stat-num" id="stat-top">—</span>
-        <span class="stat-lbl">Top rated</span>
-      </div>
+      <div class="stat-box"><span class="stat-num" id="stat-count">0</span><span class="stat-lbl">Vendors</span></div>
+      <div class="stat-box"><span class="stat-num" id="stat-avg">—</span><span class="stat-lbl">Avg rating</span></div>
+      <div class="stat-box"><span class="stat-num" id="stat-top">—</span><span class="stat-lbl">Top rated</span></div>
     </div>
   </div>
 
@@ -264,36 +269,79 @@
 <script>
   const SUPABASE_URL = 'https://njwalyinjkgacbjceqte.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_l00qZzx5erAf278gt2J0Ew_VdJ3PoIY';
-
   const { createClient } = supabase;
   const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  const LABELS = ['', 'Poor', 'Okay', 'Good', 'Great', 'Outstanding'];
-  let rating = 0;
+  // ── Half-star labels (0.5 steps from 0.5 to 5) ──
+  const LABELS = {
+    0.5: 'Terrible', 1: 'Poor', 1.5: 'Poor+',
+    2: 'Okay', 2.5: 'Okay+', 3: 'Good',
+    3.5: 'Good+', 4: 'Great', 4.5: 'Great+', 5: 'Outstanding'
+  };
+
+  let currentRating = 0;
+  let hoverRating = 0;
   let vendors = [];
 
-  const starBtns = document.querySelectorAll('.star-btn');
+  // ── Build the 5 star widgets ──
+  const starRow = document.getElementById('star-row');
   const starDesc = document.getElementById('star-desc');
 
-  starBtns.forEach(btn => {
-    btn.addEventListener('mouseenter', () => lightStars(+btn.dataset.val, false));
-    btn.addEventListener('mouseleave', () => lightStars(rating, false));
-    btn.addEventListener('click', () => {
-      rating = +btn.dataset.val;
-      lightStars(rating, true);
-      starDesc.textContent = LABELS[rating];
-    });
-  });
+  for (let i = 1; i <= 5; i++) {
+    const wrap = document.createElement('div');
+    wrap.className = 'star-wrap';
+    wrap.dataset.star = i;
 
-  function lightStars(val, perm) {
-    starBtns.forEach(b => b.classList.toggle('lit', +b.dataset.val <= val));
-    if (!perm) starDesc.textContent = val > 0 ? LABELS[val] : (rating > 0 ? LABELS[rating] : 'Tap to rate');
+    // SVG star with left/right clip paths for half rendering
+    wrap.innerHTML = `
+      <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <clipPath id="left-${i}"><rect x="0" y="0" width="18" height="36"/></clipPath>
+          <clipPath id="right-${i}"><rect x="18" y="0" width="18" height="36"/></clipPath>
+        </defs>
+        <!-- background (empty) star -->
+        <path class="star-bg" d="M18 2.5l4.5 9 10 1.5-7.25 7 1.75 10L18 25.5l-9 4.5 1.75-10L3.5 13l10-1.5z"
+          fill="none" stroke="var(--border-strong)" stroke-width="1.5" stroke-linejoin="round"/>
+        <!-- left half fill -->
+        <path class="star-left" clip-path="url(#left-${i})"
+          d="M18 2.5l4.5 9 10 1.5-7.25 7 1.75 10L18 25.5l-9 4.5 1.75-10L3.5 13l10-1.5z"
+          fill="var(--border-strong)"/>
+        <!-- right half fill -->
+        <path class="star-right" clip-path="url(#right-${i})"
+          d="M18 2.5l4.5 9 10 1.5-7.25 7 1.75 10L18 25.5l-9 4.5 1.75-10L3.5 13l10-1.5z"
+          fill="var(--border-strong)"/>
+      </svg>
+      <div class="star-half-left"  data-val="${i - 0.5}"></div>
+      <div class="star-half-right" data-val="${i}"></div>
+    `;
+
+    wrap.querySelectorAll('.star-half-left, .star-half-right').forEach(half => {
+      half.addEventListener('mouseenter', () => { hoverRating = +half.dataset.val; paintStars(hoverRating); starDesc.textContent = LABELS[hoverRating] || ''; });
+      half.addEventListener('mouseleave', () => { hoverRating = 0; paintStars(currentRating); starDesc.textContent = currentRating ? LABELS[currentRating] : 'Tap to rate'; });
+      half.addEventListener('click',      () => { currentRating = +half.dataset.val; paintStars(currentRating); starDesc.textContent = LABELS[currentRating]; });
+    });
+
+    starRow.insertBefore(wrap, starDesc);
   }
 
+  function paintStars(val) {
+    for (let i = 1; i <= 5; i++) {
+      const wrap = starRow.querySelector(`[data-star="${i}"]`);
+      const lp = wrap.querySelector('.star-left');
+      const rp = wrap.querySelector('.star-right');
+      const filled = 'var(--amber-mid)';
+      const empty  = 'var(--border-strong)';
+      if (val >= i)        { lp.setAttribute('fill', filled); rp.setAttribute('fill', filled); }
+      else if (val >= i-0.5) { lp.setAttribute('fill', filled); rp.setAttribute('fill', empty); }
+      else                   { lp.setAttribute('fill', empty);  rp.setAttribute('fill', empty); }
+    }
+  }
+
+  // ── Supabase helpers ──
   function setStatus(state) {
     const dot = document.getElementById('dot');
     const label = document.getElementById('sync-label');
-    if (state === 'live') { dot.className = 'dot live'; label.textContent = 'Live'; }
+    if (state === 'live')  { dot.className = 'dot live';  label.textContent = 'Live'; }
     else if (state === 'error') { dot.className = 'dot error'; label.textContent = 'Offline'; }
     else { dot.className = 'dot'; label.textContent = 'Connecting…'; }
   }
@@ -323,20 +371,20 @@
   }
 
   async function addVendor() {
-    const name = document.getElementById('v-name').value.trim();
-    const dish = document.getElementById('v-dish').value.trim();
-    const addr = document.getElementById('v-addr').value.trim();
+    const name  = document.getElementById('v-name').value.trim();
+    const dish  = document.getElementById('v-dish').value.trim();
+    const addr  = document.getElementById('v-addr').value.trim();
     const notes = document.getElementById('v-notes').value.trim();
-    const link = normaliseLink(document.getElementById('v-link').value);
-    if (!name) { alert('Please enter a vendor name.'); return; }
-    if (!rating) { alert('Please select a rating.'); return; }
+    const link  = normaliseLink(document.getElementById('v-link').value);
+    if (!name)          { alert('Please enter a vendor name.'); return; }
+    if (!currentRating) { alert('Please select a rating.');     return; }
 
     const btn = document.getElementById('add-btn');
     btn.disabled = true;
     btn.innerHTML = '<i class="ti ti-loader" aria-hidden="true"></i> Saving…';
 
     const { data, error } = await db.from('vendors').insert([{
-      name, dish, addr, notes, link, rating, added: Date.now()
+      name, dish, addr, notes, link, rating: currentRating, added: Date.now()
     }]).select();
 
     btn.disabled = false;
@@ -346,8 +394,8 @@
 
     vendors.unshift(data[0]);
     ['v-name','v-dish','v-addr','v-link','v-notes'].forEach(id => document.getElementById(id).value = '');
-    rating = 0;
-    lightStars(0, true);
+    currentRating = 0;
+    paintStars(0);
     starDesc.textContent = 'Tap to rate';
     renderList();
     toast('Vendor added ✓');
@@ -369,8 +417,7 @@
     const csv = rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'food-vendors.csv'; a.click();
+    const a = document.createElement('a'); a.href = url; a.download = 'food-vendors.csv'; a.click();
     URL.revokeObjectURL(url);
   }
 
@@ -378,13 +425,38 @@
     const sort = document.getElementById('sort-select').value;
     return [...vendors].sort((a, b) => {
       if (sort === 'rating') return b.rating - a.rating || a.name.localeCompare(b.name);
-      if (sort === 'name') return a.name.localeCompare(b.name);
+      if (sort === 'name')   return a.name.localeCompare(b.name);
       return b.added - a.added;
     });
   }
 
   function esc(s) {
     return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // Renders a static half-star display for a given rating value
+  function starsHTML(val, size) {
+    size = size || 16;
+    let html = '<div style="display:flex;gap:2px">';
+    for (let i = 1; i <= 5; i++) {
+      const id = `d-${Math.random().toString(36).slice(2)}-${i}`;
+      let leftFill, rightFill;
+      if (val >= i)          { leftFill = 'var(--amber-mid)'; rightFill = 'var(--amber-mid)'; }
+      else if (val >= i-0.5) { leftFill = 'var(--amber-mid)'; rightFill = 'var(--border-strong)'; }
+      else                   { leftFill = 'var(--border-strong)'; rightFill = 'var(--border-strong)'; }
+
+      html += `<svg width="${size}" height="${size}" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+        <defs>
+          <clipPath id="l-${id}"><rect x="0" y="0" width="18" height="36"/></clipPath>
+          <clipPath id="r-${id}"><rect x="18" y="0" width="18" height="36"/></clipPath>
+        </defs>
+        <path clip-path="url(#l-${id})" d="M18 2.5l4.5 9 10 1.5-7.25 7 1.75 10L18 25.5l-9 4.5 1.75-10L3.5 13l10-1.5z" fill="${leftFill}"/>
+        <path clip-path="url(#r-${id})" d="M18 2.5l4.5 9 10 1.5-7.25 7 1.75 10L18 25.5l-9 4.5 1.75-10L3.5 13l10-1.5z" fill="${rightFill}"/>
+        <path d="M18 2.5l4.5 9 10 1.5-7.25 7 1.75 10L18 25.5l-9 4.5 1.75-10L3.5 13l10-1.5z" fill="none" stroke="var(--border-strong)" stroke-width="1" stroke-linejoin="round"/>
+      </svg>`;
+    }
+    html += '</div>';
+    return html;
   }
 
   function renderList() {
@@ -406,13 +478,10 @@
     const isByRating = document.getElementById('sort-select').value === 'rating';
     document.getElementById('vendor-list').innerHTML = sorted.map((v, i) => {
       const isTop = isByRating && i === 0 && vendors.length > 1;
-      const pct = (v.rating / 5 * 100).toFixed(0);
-      const stars = [1,2,3,4,5].map(s => `<span class="s ${s <= v.rating ? 'on' : 'off'}">★</span>`).join('');
+      const pct   = (v.rating / 5 * 100).toFixed(0);
 
       let linkLabel = '';
-      if (v.link) {
-        try { linkLabel = new URL(v.link).hostname.replace(/^www\./, ''); } catch { linkLabel = v.link; }
-      }
+      if (v.link) { try { linkLabel = new URL(v.link).hostname.replace(/^www\./,''); } catch { linkLabel = v.link; } }
 
       return `
         <div class="vendor-card ${isTop ? 'gold-border' : ''}">
@@ -428,7 +497,7 @@
               ${v.link ? `<a class="vendor-link" href="${esc(v.link)}" target="_blank" rel="noopener noreferrer"><i class="ti ti-external-link" style="font-size:11px" aria-hidden="true"></i>${esc(linkLabel)}</a>` : ''}
             </div>
             <div class="vendor-right">
-              <div class="stars-display">${stars}</div>
+              ${starsHTML(v.rating, 16)}
               <span class="score-txt">${v.rating}/5</span>
               <button class="del-btn" onclick="removeVendor(${v.id})" aria-label="Remove ${esc(v.name)}">
                 <i class="ti ti-trash" aria-hidden="true"></i>
