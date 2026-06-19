@@ -1,4 +1,4 @@
-# food & drink ranker
+# Food & Drink Ranker
 
 A shared, real-time food and drink vendor ranking site, built as a single self-contained file. No build tools or frameworks required. 
 
