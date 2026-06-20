@@ -561,6 +561,14 @@
 
   let vendors = [];
 
+  document.getElementById('vendor-list').addEventListener('click', e => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const id = btn.dataset.id;
+    if (btn.dataset.action === 'delete') removeVendor(id);
+    if (btn.dataset.action === 'edit')   openEditModal(id);
+  });
+
   async function loadVendors() {
     const { data, error } = await db.from('vendors').select('*').order('added', { ascending: false });
     if (error) { setStatus('error'); return; }
@@ -614,9 +622,74 @@
     if (!confirm('Remove this vendor?')) return;
     const { error } = await db.from('vendors').delete().eq('id', id);
     if (error) { alert('Error removing vendor.'); return; }
-    vendors = vendors.filter(v => v.id !== id);
+    vendors = vendors.filter(v => String(v.id) !== String(id));
     renderList();
     toast('Vendor removed');
+  }
+
+  /* ─── Edit modal ─── */
+  let editingId = null;
+
+  function openEditModal(id) {
+    const v = vendors.find(x => String(x.id) === String(id));
+    if (!v) return;
+    editingId = v.id;
+
+    document.getElementById('e-name').value  = v.name  || '';
+    document.getElementById('e-dish').value  = v.dish  || '';
+    document.getElementById('e-addr').value  = v.addr  || '';
+    document.getElementById('e-link').value  = v.link  || '';
+    document.getElementById('e-notes').value = v.notes || '';
+
+    editStarPicker.set(v.rating || 0);
+    editVerdictPicker.set(v.verdict || '');
+
+    document.getElementById('edit-modal-overlay').classList.remove('hidden');
+  }
+
+  function closeEditModal() {
+    document.getElementById('edit-modal-overlay').classList.add('hidden');
+    editingId = null;
+  }
+
+  document.getElementById('edit-modal-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('edit-modal-overlay')) closeEditModal();
+  });
+
+  async function saveEdit() {
+    if (editingId === null) return;
+    const name  = document.getElementById('e-name').value.trim();
+    const dish  = document.getElementById('e-dish').value.trim();
+    const addr  = document.getElementById('e-addr').value.trim();
+    const notes = document.getElementById('e-notes').value.trim();
+    const link  = normaliseLink(document.getElementById('e-link').value);
+    const rating  = editStarPicker.value;
+    const verdict = editVerdictPicker.value;
+
+    if (!name)    { alert('Please enter a vendor name.'); return; }
+    if (!rating)  { alert('Please select a rating.');     return; }
+    if (!verdict) { alert('Please select whether you would go back.'); return; }
+
+    const btn = document.getElementById('save-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ti ti-loader" aria-hidden="true"></i> Saving…';
+
+    const { data, error } = await db.from('vendors')
+      .update({ name, dish, addr, notes, link, rating, verdict })
+      .eq('id', editingId)
+      .select();
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-check" aria-hidden="true"></i> Save changes';
+
+    if (error) { alert('Error saving changes: ' + error.message); return; }
+
+    const idx = vendors.findIndex(v => String(v.id) === String(editingId));
+    if (idx !== -1) vendors[idx] = data[0];
+
+    closeEditModal();
+    renderList();
+    toast('Vendor updated ✓');
   }
 
   function exportCSV() {
@@ -690,10 +763,10 @@
             <div class="vendor-right">
               ${starsHTML(v.rating, 16)}
               <span class="score-txt">${v.rating}/5</span>
-              <button class="del-btn" onclick="removeVendor(${v.id})" aria-label="Remove ${esc(v.name)}">
+              <button class="del-btn" data-action="delete" data-id="${v.id}" aria-label="Remove ${esc(v.name)}">
                 <i class="ti ti-trash" aria-hidden="true"></i>
               </button>
-              <button class="edit-btn" onclick="openEditModal(${v.id})" aria-label="Edit ${esc(v.name)}">
+              <button class="edit-btn" data-action="edit" data-id="${v.id}" aria-label="Edit ${esc(v.name)}">
                 <i class="ti ti-pencil" aria-hidden="true"></i>
               </button>
             </div>
