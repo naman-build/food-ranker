@@ -28,6 +28,7 @@
       --blue-light: #eff6ff;
       --green: #16a34a;
       --green-light: #dcfce7;
+      --gray-light: #f1f1ef;
       --radius: 12px;
       --radius-sm: 8px;
     }
@@ -46,6 +47,7 @@
         --blue: #60a5fa;
         --blue-light: #0d1f3c;
         --green-light: #052010;
+        --gray-light: #232320;
       }
     }
 
@@ -57,131 +59,15 @@
     header h1 { font-size: 17px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
     header p { font-size: 13px; color: var(--text-secondary); }
 
-    .header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
-
-    .sync-dot { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-tertiary); }
+    .sync-dot { margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-tertiary); }
     .dot { width: 7px; height: 7px; border-radius: 50%; background: #9e9e99; }
     .dot.live { background: var(--green); }
     .dot.error { background: var(--red); }
 
-    /* ── Lock badge ── */
-    .lock-badge {
-      display: flex; align-items: center; gap: 5px;
-      font-size: 12px; font-weight: 500;
-      padding: 4px 10px;
-      border-radius: 99px;
-      cursor: pointer;
-      border: 0.5px solid var(--border-strong);
-      background: var(--surface);
-      color: var(--text-secondary);
-      transition: background 0.12s;
-      white-space: nowrap;
-    }
-    .lock-badge:hover { background: var(--bg); }
-    .lock-badge.unlocked { color: var(--green); border-color: var(--green); background: var(--green-light); }
-
-    /* ── Password modal ── */
-    .modal-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.4);
-      backdrop-filter: blur(4px);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 200;
-      padding: 1rem;
-    }
-    .modal-overlay.hidden { display: none; }
-
-    .modal {
-      background: var(--surface);
-      border-radius: var(--radius);
-      border: 0.5px solid var(--border);
-      padding: 1.75rem;
-      width: 100%;
-      max-width: 360px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-    }
-
-    .modal-icon {
-      width: 44px; height: 44px;
-      background: var(--amber-light);
-      border-radius: var(--radius-sm);
-      display: flex; align-items: center; justify-content: center;
-      color: var(--amber); font-size: 20px;
-      margin-bottom: 1rem;
-    }
-
-    .modal h2 { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
-    .modal p  { font-size: 13px; color: var(--text-secondary); margin-bottom: 1.25rem; }
-
-    .pw-row { display: flex; gap: 8px; }
-
-    .pw-row input {
-      font-family: 'Inter', system-ui, sans-serif; font-size: 14px; color: var(--text);
-      background: var(--bg); border: 0.5px solid var(--border-strong);
-      border-radius: var(--radius-sm); padding: 9px 12px; flex: 1; outline: none;
-      transition: border-color 0.15s; letter-spacing: 0.1em;
-    }
-    .pw-row input:focus { border-color: var(--amber-mid); box-shadow: 0 0 0 3px rgba(245,158,11,0.12); }
-    .pw-row input.shake { animation: shake 0.35s ease; border-color: var(--red); }
-
-    @keyframes shake {
-      0%,100% { transform: translateX(0); }
-      20%      { transform: translateX(-6px); }
-      40%      { transform: translateX(6px); }
-      60%      { transform: translateX(-4px); }
-      80%      { transform: translateX(4px); }
-    }
-
-    .pw-submit {
-      padding: 9px 16px;
-      background: var(--text); color: var(--bg);
-      border: none; border-radius: var(--radius-sm);
-      font-family: 'Inter', system-ui, sans-serif;
-      font-size: 14px; font-weight: 500; cursor: pointer;
-      transition: opacity 0.15s; white-space: nowrap;
-    }
-    .pw-submit:hover { opacity: 0.82; }
-
-    .pw-error { font-size: 12px; color: var(--red); margin-top: 8px; min-height: 16px; }
-
-    .modal-cancel {
-      margin-top: 12px; width: 100%;
-      background: none; border: none;
-      font-family: 'Inter', system-ui, sans-serif;
-      font-size: 13px; color: var(--text-tertiary);
-      cursor: pointer; padding: 4px;
-    }
-    .modal-cancel:hover { color: var(--text-secondary); }
-
-    /* ── Main layout ── */
     main { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem; }
 
     .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem; }
     .card-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1.25rem; }
-
-    /* Locked state overlay on the form card */
-    .form-card { position: relative; overflow: hidden; }
-    .form-locked-overlay {
-      position: absolute; inset: 0;
-      background: var(--surface);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 10px;
-      border-radius: var(--radius);
-      opacity: 0.97;
-      z-index: 2;
-    }
-    .form-locked-overlay.hidden { display: none; }
-    .form-locked-overlay i { font-size: 32px; color: var(--text-tertiary); }
-    .form-locked-overlay p { font-size: 14px; color: var(--text-secondary); }
-    .unlock-inline-btn {
-      padding: 8px 20px;
-      background: var(--text); color: var(--bg);
-      border: none; border-radius: var(--radius-sm);
-      font-family: 'Inter', system-ui, sans-serif;
-      font-size: 13px; font-weight: 500; cursor: pointer;
-      transition: opacity 0.15s;
-    }
-    .unlock-inline-btn:hover { opacity: 0.82; }
 
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
     @media (max-width: 520px) { .form-grid { grid-template-columns: 1fr; } }
@@ -207,7 +93,35 @@
     .star-svg { width: 40px; height: 40px; flex-shrink: 0; cursor: pointer; padding: 2px; }
     .star-descriptor { font-size: 13px; font-weight: 500; color: var(--text-secondary); min-width: 90px; }
 
-    .add-btn { width: 100%; padding: 11px; background: var(--text); color: var(--bg); border: none; border-radius: var(--radius-sm); font-family: 'Inter', system-ui, sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 16px; transition: opacity 0.15s; }
+    /* ── Verdict selector ── */
+    .verdict-section { margin-top: 18px; }
+    .verdict-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .verdict-btn {
+      flex: 1;
+      min-width: 100px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px;
+      padding: 12px 8px;
+      border-radius: var(--radius-sm);
+      border: 0.5px solid var(--border-strong);
+      background: var(--bg);
+      cursor: pointer;
+      font-family: 'Inter', system-ui, sans-serif;
+      transition: border-color 0.15s, background 0.15s, transform 0.1s;
+    }
+    .verdict-btn:hover { transform: translateY(-1px); }
+    .verdict-btn i { font-size: 20px; color: var(--text-tertiary); }
+    .verdict-btn span { font-size: 12px; font-weight: 500; color: var(--text-secondary); text-align: center; }
+
+    .verdict-btn.selected.no    { border-color: var(--red);   background: var(--red-light); }
+    .verdict-btn.selected.no    i, .verdict-btn.selected.no span    { color: var(--red); }
+    .verdict-btn.selected.maybe { border-color: var(--amber); background: var(--amber-light); }
+    .verdict-btn.selected.maybe i, .verdict-btn.selected.maybe span { color: var(--amber); }
+    .verdict-btn.selected.yes   { border-color: var(--green); background: var(--green-light); }
+    .verdict-btn.selected.yes   i, .verdict-btn.selected.yes span   { color: var(--green); }
+
+    .add-btn { width: 100%; padding: 11px; background: var(--text); color: var(--bg); border: none; border-radius: var(--radius-sm); font-family: 'Inter', system-ui, sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 18px; transition: opacity 0.15s; }
     .add-btn:hover { opacity: 0.82; }
     .add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
@@ -230,10 +144,17 @@
     .vendor-name-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .vendor-name { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
     .top-badge { font-size: 10px; font-weight: 600; background: var(--amber-light); color: var(--amber); padding: 2px 8px; border-radius: 99px; letter-spacing: 0.04em; text-transform: uppercase; }
+
+    .verdict-pill { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 99px; letter-spacing: 0.03em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 3px; }
+    .verdict-pill.yes   { background: var(--green-light); color: var(--green); }
+    .verdict-pill.maybe { background: var(--amber-light); color: var(--amber); }
+    .verdict-pill.no    { background: var(--red-light);   color: var(--red); }
+
     .vendor-dish { font-size: 13px; color: var(--text-secondary); margin-top: 3px; display: flex; align-items: center; gap: 5px; }
     .vendor-addr { font-size: 12px; color: var(--text-tertiary); margin-top: 4px; display: flex; align-items: center; gap: 5px; }
     .vendor-link { margin-top: 5px; display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--blue); text-decoration: none; background: var(--blue-light); padding: 3px 9px; border-radius: 99px; font-weight: 500; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .vendor-link:hover { opacity: 0.8; }
+
     .vendor-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
     .score-txt { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
     .del-btn { background: none; border: none; cursor: pointer; color: var(--text-tertiary); font-size: 16px; padding: 2px; border-radius: 4px; line-height: 1; }
@@ -259,22 +180,6 @@
 </head>
 <body>
 
-<!-- Password modal -->
-<div class="modal-overlay hidden" id="modal-overlay">
-  <div class="modal">
-    <div class="modal-icon"><i class="ti ti-lock" aria-hidden="true"></i></div>
-    <h2>Enter password</h2>
-    <p>You need the password to add or remove entries.</p>
-    <div class="pw-row">
-      <input type="password" id="pw-input" placeholder="••••" maxlength="20"
-             onkeydown="if(event.key==='Enter') submitPassword()">
-      <button class="pw-submit" onclick="submitPassword()">Unlock</button>
-    </div>
-    <p class="pw-error" id="pw-error"></p>
-    <button class="modal-cancel" onclick="closeModal()">Cancel</button>
-  </div>
-</div>
-
 <header>
   <div class="header-inner">
     <div class="header-icon"><i class="ti ti-tools-kitchen-2" aria-hidden="true"></i></div>
@@ -282,33 +187,16 @@
       <h1>Food &amp; Drink Ranker</h1>
       <p>Rate vendors, dishes, and find your favourites</p>
     </div>
-    <div class="header-right">
-      <div class="sync-dot">
-        <div class="dot" id="dot"></div>
-        <span id="sync-label">Connecting…</span>
-      </div>
-      <button class="lock-badge" id="lock-badge" onclick="handleLockClick()">
-        <i class="ti ti-lock" id="lock-icon" aria-hidden="true"></i>
-        <span id="lock-label">Locked</span>
-      </button>
+    <div class="sync-dot">
+      <div class="dot" id="dot"></div>
+      <span id="sync-label">Connecting…</span>
     </div>
   </div>
 </header>
 
 <main>
 
-  <!-- Add form -->
-  <div class="card form-card" id="form-card">
-
-    <!-- Locked overlay -->
-    <div class="form-locked-overlay" id="form-locked-overlay">
-      <i class="ti ti-lock-access" aria-hidden="true"></i>
-      <p>Password required to add entries</p>
-      <button class="unlock-inline-btn" onclick="openModal()">
-        <i class="ti ti-lock-open" style="font-size:13px;vertical-align:-1px;margin-right:4px" aria-hidden="true"></i>Unlock
-      </button>
-    </div>
-
+  <div class="card">
     <p class="card-title">Add a vendor</p>
     <div class="form-grid">
       <div class="field">
@@ -338,7 +226,25 @@
       <span class="star-descriptor" id="star-desc">Tap or drag to rate</span>
     </div>
 
-    <div class="form-grid" style="margin-top:14px;margin-bottom:0">
+    <div class="verdict-section">
+      <span class="rating-label">Would you go back?</span>
+      <div class="verdict-row" id="verdict-row">
+        <button type="button" class="verdict-btn" data-verdict="no">
+          <i class="ti ti-circle-x" aria-hidden="true"></i>
+          <span>Would not<br>try again</span>
+        </button>
+        <button type="button" class="verdict-btn" data-verdict="maybe">
+          <i class="ti ti-circle-dashed" aria-hidden="true"></i>
+          <span>Maybe</span>
+        </button>
+        <button type="button" class="verdict-btn" data-verdict="yes">
+          <i class="ti ti-circle-check" aria-hidden="true"></i>
+          <span>Would<br>try again</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="form-grid" style="margin-top:18px;margin-bottom:0">
       <div class="field full">
         <div class="label-row">
           <label for="v-notes">Notes</label>
@@ -365,6 +271,7 @@
     <div class="controls">
       <span class="controls-label">Sort by</span>
       <select id="sort-select" onchange="renderList()">
+        <option value="verdict">Would go back first</option>
         <option value="rating">Highest rated</option>
         <option value="name">Name (A–Z)</option>
         <option value="added">Recently added</option>
@@ -379,7 +286,7 @@
   <div class="vendor-list" id="vendor-list"></div>
   <div class="empty" id="empty-state" style="display:none">
     <i class="ti ti-bowl-chopsticks" aria-hidden="true"></i>
-    <p>No vendors yet.</p>
+    <p>No vendors yet — add one above to start your list.</p>
   </div>
 
   <div class="love-footer">anh iu Chanh ❤️</div>
@@ -391,107 +298,14 @@
   /* ─── Config ─── */
   const SUPABASE_URL = 'https://njwalyinjkgacbjceqte.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_l00qZzx5erAf278gt2J0Ew_VdJ3PoIY';
-  const PASSWORD_HASH = 'f652f5c87c84f33899f9be3b2f62607ce5b61c68cac1f70bb4cdbb40d79b6904';
-
   const { createClient } = supabase;
   const db = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  /* ─── Auth state ─── */
-  let unlocked = sessionStorage.getItem('fr_unlocked') === '1';
-
-  function applyLockState() {
-    const overlay   = document.getElementById('form-locked-overlay');
-    const badge     = document.getElementById('lock-badge');
-    const lockIcon  = document.getElementById('lock-icon');
-    const lockLabel = document.getElementById('lock-label');
-
-    if (unlocked) {
-      overlay.classList.add('hidden');
-      badge.classList.add('unlocked');
-      lockIcon.className  = 'ti ti-lock-open';
-      lockLabel.textContent = 'Unlocked';
-    } else {
-      overlay.classList.remove('hidden');
-      badge.classList.remove('unlocked');
-      lockIcon.className  = 'ti ti-lock';
-      lockLabel.textContent = 'Locked';
-    }
-  }
-
-  function handleLockClick() {
-    if (unlocked) {
-      // Lock again
-      unlocked = false;
-      sessionStorage.removeItem('fr_unlocked');
-      applyLockState();
-      toast('Locked');
-    } else {
-      openModal();
-    }
-  }
-
-  function openModal() {
-    document.getElementById('modal-overlay').classList.remove('hidden');
-    document.getElementById('pw-input').value = '';
-    document.getElementById('pw-error').textContent = '';
-    setTimeout(() => document.getElementById('pw-input').focus(), 50);
-  }
-
-  function closeModal() {
-    document.getElementById('modal-overlay').classList.add('hidden');
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  async function hashString(str) {
-    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-  }
-
-  async function submitPassword() {
-    const val   = document.getElementById('pw-input').value;
-    const input = document.getElementById('pw-input');
-    const hash  = await hashString(val);
-    if (hash === PASSWORD_HASH) {
-      unlocked = true;
-      sessionStorage.setItem('fr_unlocked', '1');
-      closeModal();
-      applyLockState();
-      toast('Unlocked ✓');
-    } else {
-      document.getElementById('pw-error').textContent = 'Incorrect password — try again.';
-      input.classList.add('shake');
-      input.value = '';
-      setTimeout(() => input.classList.remove('shake'), 400);
-    }
-  }
-
-  // Close modal on overlay click
-  document.getElementById('modal-overlay').addEventListener('click', e => {
-    if (e.target === document.getElementById('modal-overlay')) closeModal();
-  });
-
-  applyLockState();
 
   /* ─── Star rating ─── */
   const LABELS    = { 0.5:'Terrible', 1:'Poor', 1.5:'Poor+', 2:'Okay', 2.5:'Okay+', 3:'Good', 3.5:'Good+', 4:'Great', 4.5:'Great+', 5:'Outstanding' };
   const STAR_PATH = 'M18 2.5l4.5 9 10 1.5-7.25 7 1.75 10L18 25.5l-9 4.5 1.75-10L3.5 13l10-1.5z';
   let currentRating = 0;
+  let currentVerdict = '';
   let isDragging    = false;
 
   const starGroup = document.getElementById('star-group');
@@ -546,6 +360,21 @@
   window.addEventListener('touchmove',  e => { if (isDragging) { commitRating(ratingFromX(e.touches[0].clientX)); e.preventDefault(); } }, { passive: false });
   window.addEventListener('touchend',   () => { isDragging = false; });
 
+  /* ─── Verdict selector ─── */
+  const verdictBtns = document.querySelectorAll('.verdict-btn');
+  verdictBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentVerdict = btn.dataset.verdict;
+      verdictBtns.forEach(b => b.classList.remove('selected', 'yes', 'maybe', 'no'));
+      btn.classList.add('selected', currentVerdict);
+    });
+  });
+
+  function resetVerdict() {
+    currentVerdict = '';
+    verdictBtns.forEach(b => b.classList.remove('selected', 'yes', 'maybe', 'no'));
+  }
+
   /* ─── Static star display (cards) ─── */
   function starsHTML(val, size) {
     size = size || 16;
@@ -565,6 +394,13 @@
       </svg>`;
     }
     return html + '</div>';
+  }
+
+  function verdictPillHTML(v) {
+    if (v === 'yes')   return `<span class="verdict-pill yes"><i class="ti ti-circle-check" style="font-size:12px"></i>Would go back</span>`;
+    if (v === 'maybe') return `<span class="verdict-pill maybe"><i class="ti ti-circle-dashed" style="font-size:12px"></i>Maybe</span>`;
+    if (v === 'no')    return `<span class="verdict-pill no"><i class="ti ti-circle-x" style="font-size:12px"></i>Would not go back</span>`;
+    return '';
   }
 
   /* ─── Supabase ─── */
@@ -601,7 +437,6 @@
   }
 
   async function addVendor() {
-    if (!unlocked) { openModal(); return; }
     const name  = document.getElementById('v-name').value.trim();
     const dish  = document.getElementById('v-dish').value.trim();
     const addr  = document.getElementById('v-addr').value.trim();
@@ -609,13 +444,14 @@
     const link  = normaliseLink(document.getElementById('v-link').value);
     if (!name)          { alert('Please enter a vendor name.'); return; }
     if (!currentRating) { alert('Please select a rating.');     return; }
+    if (!currentVerdict) { alert('Please select whether you would go back.'); return; }
 
     const btn = document.getElementById('add-btn');
     btn.disabled = true;
     btn.innerHTML = '<i class="ti ti-loader" aria-hidden="true"></i> Saving…';
 
     const { data, error } = await db.from('vendors').insert([{
-      name, dish, addr, notes, link, rating: currentRating, added: Date.now()
+      name, dish, addr, notes, link, rating: currentRating, verdict: currentVerdict, added: Date.now()
     }]).select();
 
     btn.disabled = false;
@@ -625,12 +461,12 @@
     vendors.unshift(data[0]);
     ['v-name','v-dish','v-addr','v-link','v-notes'].forEach(id => document.getElementById(id).value = '');
     resetStars();
+    resetVerdict();
     renderList();
     toast('Vendor added ✓');
   }
 
   async function removeVendor(id) {
-    if (!unlocked) { openModal(); return; }
     if (!confirm('Remove this vendor?')) return;
     const { error } = await db.from('vendors').delete().eq('id', id);
     if (error) { alert('Error removing vendor.'); return; }
@@ -641,8 +477,8 @@
 
   function exportCSV() {
     if (!vendors.length) return;
-    const rows = [['Rank','Name','Dish','Address','Rating','Link','Notes']];
-    getSorted().forEach((v, i) => rows.push([i+1, v.name, v.dish, v.addr, v.rating+'/5', v.link||'', v.notes||'']));
+    const rows = [['Rank','Name','Dish','Address','Rating','Would go back','Link','Notes']];
+    getSorted().forEach((v, i) => rows.push([i+1, v.name, v.dish, v.addr, v.rating+'/5', v.verdict||'', v.link||'', v.notes||'']));
     const csv = rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url  = URL.createObjectURL(blob);
@@ -650,9 +486,16 @@
     URL.revokeObjectURL(url);
   }
 
+  const VERDICT_ORDER = { yes: 0, maybe: 1, no: 2, '': 3 };
+
   function getSorted() {
     const sort = document.getElementById('sort-select').value;
     return [...vendors].sort((a, b) => {
+      if (sort === 'verdict') {
+        const vo = VERDICT_ORDER[a.verdict||''] - VERDICT_ORDER[b.verdict||''];
+        if (vo !== 0) return vo;
+        return b.rating - a.rating || a.name.localeCompare(b.name);
+      }
       if (sort === 'rating') return b.rating - a.rating || a.name.localeCompare(b.name);
       if (sort === 'name')   return a.name.localeCompare(b.name);
       return b.added - a.added;
@@ -677,17 +520,14 @@
       document.getElementById('stat-top').textContent   = topV.name.length > 12 ? topV.name.slice(0,11)+'…' : topV.name;
     }
 
-    const isByRating = document.getElementById('sort-select').value === 'rating';
+    const sortVal = document.getElementById('sort-select').value;
+    const isByRating = sortVal === 'rating' || sortVal === 'verdict';
+
     document.getElementById('vendor-list').innerHTML = sorted.map((v, i) => {
       const isTop = isByRating && i === 0 && vendors.length > 1;
       const pct   = (v.rating / 5 * 100).toFixed(0);
       let linkLabel = '';
       if (v.link) { try { linkLabel = new URL(v.link).hostname.replace(/^www\./,''); } catch { linkLabel = v.link; } }
-
-      // Only show delete button when unlocked
-      const delBtn = unlocked
-        ? `<button class="del-btn" onclick="removeVendor(${v.id})" aria-label="Remove ${esc(v.name)}"><i class="ti ti-trash" aria-hidden="true"></i></button>`
-        : '';
 
       return `
         <div class="vendor-card ${isTop ? 'gold-border' : ''}">
@@ -697,6 +537,7 @@
               <div class="vendor-name-row">
                 <span class="vendor-name">${esc(v.name)}</span>
                 ${isTop ? '<span class="top-badge">Top pick</span>' : ''}
+                ${verdictPillHTML(v.verdict)}
               </div>
               ${v.dish ? `<div class="vendor-dish"><i class="ti ti-tools-kitchen-2" style="font-size:13px" aria-hidden="true"></i> ${esc(v.dish)}</div>` : ''}
               ${v.addr ? `<div class="vendor-addr"><i class="ti ti-map-pin" style="font-size:12px" aria-hidden="true"></i> ${esc(v.addr)}</div>` : ''}
@@ -705,7 +546,9 @@
             <div class="vendor-right">
               ${starsHTML(v.rating, 16)}
               <span class="score-txt">${v.rating}/5</span>
-              ${delBtn}
+              <button class="del-btn" onclick="removeVendor(${v.id})" aria-label="Remove ${esc(v.name)}">
+                <i class="ti ti-trash" aria-hidden="true"></i>
+              </button>
             </div>
           </div>
           <div class="bar-wrap"><div class="bar-fill" style="width:${pct}%"></div></div>
