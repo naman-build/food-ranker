@@ -176,9 +176,136 @@
     .export-btn:hover { background: var(--border); }
 
     .love-footer { text-align: center; padding: 2.5rem 1rem 1rem; font-size: 14px; color: var(--text-tertiary); }
+
+    /* ── Edit modal ── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 200; padding: 1rem;
+    }
+    .modal-overlay.hidden { display: none; }
+
+    .edit-modal {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 0.5px solid var(--border);
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 480px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+    }
+
+    .edit-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+    .edit-modal-header h2 { font-size: 16px; font-weight: 600; color: var(--text); }
+    .edit-modal-close { background: none; border: none; cursor: pointer; color: var(--text-tertiary); font-size: 20px; padding: 4px; line-height: 1; }
+    .edit-modal-close:hover { color: var(--text); }
+
+    .edit-actions { display: flex; gap: 8px; margin-top: 18px; }
+    .save-btn {
+      flex: 1; padding: 11px; background: var(--text); color: var(--bg);
+      border: none; border-radius: var(--radius-sm);
+      font-family: 'Inter', system-ui, sans-serif; font-size: 14px; font-weight: 500;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: opacity 0.15s;
+    }
+    .save-btn:hover { opacity: 0.82; }
+    .save-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .cancel-btn {
+      padding: 11px 18px; background: none;
+      border: 0.5px solid var(--border-strong); border-radius: var(--radius-sm);
+      font-family: 'Inter', system-ui, sans-serif; font-size: 14px; font-weight: 500;
+      color: var(--text-secondary); cursor: pointer; transition: background 0.12s;
+    }
+    .cancel-btn:hover { background: var(--bg); }
+
+    .edit-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-tertiary); font-size: 16px; padding: 2px; border-radius: 4px; line-height: 1;
+    }
+    .edit-btn:hover { color: var(--blue); background: var(--blue-light); }
   </style>
 </head>
 <body>
+
+<!-- Edit modal -->
+<div class="modal-overlay hidden" id="edit-modal-overlay">
+  <div class="edit-modal">
+    <div class="edit-modal-header">
+      <h2>Edit vendor</h2>
+      <button class="edit-modal-close" onclick="closeEditModal()" aria-label="Close">
+        <i class="ti ti-x" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label for="e-name">Vendor / restaurant name</label>
+        <input id="e-name" type="text">
+      </div>
+      <div class="field">
+        <label for="e-dish">Dish / item</label>
+        <input id="e-dish" type="text">
+      </div>
+      <div class="field full">
+        <label for="e-addr">Address</label>
+        <input id="e-addr" type="text">
+      </div>
+      <div class="field full">
+        <div class="label-row">
+          <label for="e-link">Link</label>
+          <span class="optional-tag">optional</span>
+        </div>
+        <input id="e-link" type="url">
+      </div>
+    </div>
+
+    <span class="rating-label">Your rating — tap or drag across the stars</span>
+    <div class="star-track" id="edit-star-track">
+      <div class="star-group" id="edit-star-group"></div>
+      <span class="star-descriptor" id="edit-star-desc">Tap or drag to rate</span>
+    </div>
+
+    <div class="verdict-section">
+      <span class="rating-label">Would you go back?</span>
+      <div class="verdict-row" id="edit-verdict-row">
+        <button type="button" class="verdict-btn" data-verdict="no">
+          <i class="ti ti-circle-x" aria-hidden="true"></i>
+          <span>Would not<br>try again</span>
+        </button>
+        <button type="button" class="verdict-btn" data-verdict="maybe">
+          <i class="ti ti-circle-dashed" aria-hidden="true"></i>
+          <span>Maybe</span>
+        </button>
+        <button type="button" class="verdict-btn" data-verdict="yes">
+          <i class="ti ti-circle-check" aria-hidden="true"></i>
+          <span>Would<br>try again</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="form-grid" style="margin-top:18px;margin-bottom:0">
+      <div class="field full">
+        <div class="label-row">
+          <label for="e-notes">Notes</label>
+          <span class="optional-tag">optional</span>
+        </div>
+        <textarea id="e-notes"></textarea>
+      </div>
+    </div>
+
+    <div class="edit-actions">
+      <button class="cancel-btn" onclick="closeEditModal()">Cancel</button>
+      <button class="save-btn" id="save-btn" onclick="saveEdit()">
+        <i class="ti ti-check" aria-hidden="true"></i> Save changes
+      </button>
+    </div>
+  </div>
+</div>
 
 <header>
   <div class="header-inner">
@@ -301,79 +428,94 @@
   const { createClient } = supabase;
   const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  /* ─── Star rating ─── */
+  /* ─── Star rating (reusable factory) ─── */
   const LABELS    = { 0.5:'Terrible', 1:'Poor', 1.5:'Poor+', 2:'Okay', 2.5:'Okay+', 3:'Good', 3.5:'Good+', 4:'Great', 4.5:'Great+', 5:'Outstanding' };
   const STAR_PATH = 'M18 2.5l4.5 9 10 1.5-7.25 7 1.75 10L18 25.5l-9 4.5 1.75-10L3.5 13l10-1.5z';
-  let currentRating = 0;
-  let currentVerdict = '';
-  let isDragging    = false;
 
-  const starGroup = document.getElementById('star-group');
-  const starDesc  = document.getElementById('star-desc');
+  function createStarPicker(groupEl, descEl, onChange) {
+    let value = 0;
+    let dragging = false;
 
-  for (let i = 1; i <= 5; i++) {
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('viewBox', '0 0 36 36');
-    svg.classList.add('star-svg');
-    svg.dataset.star = i;
-    svg.innerHTML = `
-      <defs>
-        <clipPath id="cl-${i}"><rect x="0"  y="0" width="18" height="36"/></clipPath>
-        <clipPath id="cr-${i}"><rect x="18" y="0" width="18" height="36"/></clipPath>
-      </defs>
-      <path class="s-left"  clip-path="url(#cl-${i})" d="${STAR_PATH}" fill="var(--border-strong)"/>
-      <path class="s-right" clip-path="url(#cr-${i})" d="${STAR_PATH}" fill="var(--border-strong)"/>
-      <path d="${STAR_PATH}" fill="none" stroke="var(--border-strong)" stroke-width="1" stroke-linejoin="round"/>
-    `;
-    starGroup.appendChild(svg);
-  }
-
-  function ratingFromX(clientX) {
-    const rect = starGroup.getBoundingClientRect();
-    const x    = clientX - rect.left;
-    let val    = Math.round((x / rect.width) * 10) / 2;
-    return Math.max(0.5, Math.min(5, val));
-  }
-
-  function paintStars(val) {
     for (let i = 1; i <= 5; i++) {
-      const svg = starGroup.querySelector(`[data-star="${i}"]`);
-      const lp  = svg.querySelector('.s-left');
-      const rp  = svg.querySelector('.s-right');
-      const on  = 'var(--amber-mid)', off = 'var(--border-strong)';
-      if      (val >= i)     { lp.setAttribute('fill', on);  rp.setAttribute('fill', on); }
-      else if (val >= i-0.5) { lp.setAttribute('fill', on);  rp.setAttribute('fill', off); }
-      else                   { lp.setAttribute('fill', off); rp.setAttribute('fill', off); }
+      const uid = groupEl.id + '-' + i;
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('viewBox', '0 0 36 36');
+      svg.classList.add('star-svg');
+      svg.dataset.star = i;
+      svg.innerHTML = `
+        <defs>
+          <clipPath id="cl-${uid}"><rect x="0"  y="0" width="18" height="36"/></clipPath>
+          <clipPath id="cr-${uid}"><rect x="18" y="0" width="18" height="36"/></clipPath>
+        </defs>
+        <path class="s-left"  clip-path="url(#cl-${uid})" d="${STAR_PATH}" fill="var(--border-strong)"/>
+        <path class="s-right" clip-path="url(#cr-${uid})" d="${STAR_PATH}" fill="var(--border-strong)"/>
+        <path d="${STAR_PATH}" fill="none" stroke="var(--border-strong)" stroke-width="1" stroke-linejoin="round"/>
+      `;
+      groupEl.appendChild(svg);
     }
+
+    function ratingFromX(clientX) {
+      const rect = groupEl.getBoundingClientRect();
+      const x    = clientX - rect.left;
+      let val    = Math.round((x / rect.width) * 10) / 2;
+      return Math.max(0.5, Math.min(5, val));
+    }
+
+    function paint(val) {
+      for (let i = 1; i <= 5; i++) {
+        const svg = groupEl.querySelector(`[data-star="${i}"]`);
+        const lp  = svg.querySelector('.s-left');
+        const rp  = svg.querySelector('.s-right');
+        const on  = 'var(--amber-mid)', off = 'var(--border-strong)';
+        if      (val >= i)     { lp.setAttribute('fill', on);  rp.setAttribute('fill', on); }
+        else if (val >= i-0.5) { lp.setAttribute('fill', on);  rp.setAttribute('fill', off); }
+        else                   { lp.setAttribute('fill', off); rp.setAttribute('fill', off); }
+      }
+    }
+
+    function preview(val) { paint(val); descEl.textContent = val ? (LABELS[val] || val+'/5') : 'Tap or drag to rate'; }
+    function commit(val)  { value = val; preview(val); if (onChange) onChange(value); }
+
+    groupEl.addEventListener('mousemove',  e => { if (!dragging) preview(ratingFromX(e.clientX)); });
+    groupEl.addEventListener('mouseleave', () => { if (!dragging) preview(value); });
+    groupEl.addEventListener('mousedown',  e => { dragging = true; commit(ratingFromX(e.clientX)); e.preventDefault(); });
+    window.addEventListener('mousemove',  e => { if (dragging) commit(ratingFromX(e.clientX)); });
+    window.addEventListener('mouseup',    () => { dragging = false; });
+    groupEl.addEventListener('touchstart', e => { dragging = true; commit(ratingFromX(e.touches[0].clientX)); e.preventDefault(); }, { passive: false });
+    window.addEventListener('touchmove',  e => { if (dragging) { commit(ratingFromX(e.touches[0].clientX)); e.preventDefault(); } }, { passive: false });
+    window.addEventListener('touchend',   () => { dragging = false; });
+
+    return {
+      get value() { return value; },
+      set: (val) => { value = val; paint(val); descEl.textContent = val ? (LABELS[val] || val+'/5') : 'Tap or drag to rate'; },
+      reset: () => { value = 0; paint(0); descEl.textContent = 'Tap or drag to rate'; }
+    };
   }
 
-  function applyPreview(val) { paintStars(val); starDesc.textContent = val ? (LABELS[val] || val+'/5') : 'Tap or drag to rate'; }
-  function commitRating(val) { currentRating = val; applyPreview(val); }
-  function resetStars()      { currentRating = 0; paintStars(0); starDesc.textContent = 'Tap or drag to rate'; }
-
-  starGroup.addEventListener('mousemove',  e => { if (!isDragging) applyPreview(ratingFromX(e.clientX)); });
-  starGroup.addEventListener('mouseleave', e => { if (!isDragging) applyPreview(currentRating); });
-  starGroup.addEventListener('mousedown',  e => { isDragging = true; commitRating(ratingFromX(e.clientX)); e.preventDefault(); });
-  window.addEventListener('mousemove',  e => { if (isDragging) commitRating(ratingFromX(e.clientX)); });
-  window.addEventListener('mouseup',    () => { isDragging = false; });
-  starGroup.addEventListener('touchstart', e => { isDragging = true; commitRating(ratingFromX(e.touches[0].clientX)); e.preventDefault(); }, { passive: false });
-  window.addEventListener('touchmove',  e => { if (isDragging) { commitRating(ratingFromX(e.touches[0].clientX)); e.preventDefault(); } }, { passive: false });
-  window.addEventListener('touchend',   () => { isDragging = false; });
-
-  /* ─── Verdict selector ─── */
-  const verdictBtns = document.querySelectorAll('.verdict-btn');
-  verdictBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      currentVerdict = btn.dataset.verdict;
-      verdictBtns.forEach(b => b.classList.remove('selected', 'yes', 'maybe', 'no'));
-      btn.classList.add('selected', currentVerdict);
+  /* ─── Verdict selector (reusable factory) ─── */
+  function createVerdictPicker(rowEl, onChange) {
+    let value = '';
+    const btns = rowEl.querySelectorAll('.verdict-btn');
+    btns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        value = btn.dataset.verdict;
+        btns.forEach(b => b.classList.remove('selected', 'yes', 'maybe', 'no'));
+        btn.classList.add('selected', value);
+        if (onChange) onChange(value);
+      });
     });
-  });
-
-  function resetVerdict() {
-    currentVerdict = '';
-    verdictBtns.forEach(b => b.classList.remove('selected', 'yes', 'maybe', 'no'));
+    return {
+      get value() { return value; },
+      set: (val) => { value = val; btns.forEach(b => b.classList.toggle('selected', b.dataset.verdict === val)); btns.forEach(b => { if (b.dataset.verdict === val) b.classList.add(val); else b.classList.remove('yes','maybe','no'); }); },
+      reset: () => { value = ''; btns.forEach(b => b.classList.remove('selected', 'yes', 'maybe', 'no')); }
+    };
   }
+
+  const addStarPicker    = createStarPicker(document.getElementById('star-group'), document.getElementById('star-desc'));
+  const addVerdictPicker = createVerdictPicker(document.getElementById('verdict-row'));
+
+  const editStarPicker    = createStarPicker(document.getElementById('edit-star-group'), document.getElementById('edit-star-desc'));
+  const editVerdictPicker = createVerdictPicker(document.getElementById('edit-verdict-row'));
 
   /* ─── Static star display (cards) ─── */
   function starsHTML(val, size) {
@@ -442,16 +584,18 @@
     const addr  = document.getElementById('v-addr').value.trim();
     const notes = document.getElementById('v-notes').value.trim();
     const link  = normaliseLink(document.getElementById('v-link').value);
-    if (!name)          { alert('Please enter a vendor name.'); return; }
-    if (!currentRating) { alert('Please select a rating.');     return; }
-    if (!currentVerdict) { alert('Please select whether you would go back.'); return; }
+    const rating  = addStarPicker.value;
+    const verdict = addVerdictPicker.value;
+    if (!name)    { alert('Please enter a vendor name.'); return; }
+    if (!rating)  { alert('Please select a rating.');     return; }
+    if (!verdict) { alert('Please select whether you would go back.'); return; }
 
     const btn = document.getElementById('add-btn');
     btn.disabled = true;
     btn.innerHTML = '<i class="ti ti-loader" aria-hidden="true"></i> Saving…';
 
     const { data, error } = await db.from('vendors').insert([{
-      name, dish, addr, notes, link, rating: currentRating, verdict: currentVerdict, added: Date.now()
+      name, dish, addr, notes, link, rating, verdict, added: Date.now()
     }]).select();
 
     btn.disabled = false;
@@ -460,8 +604,8 @@
 
     vendors.unshift(data[0]);
     ['v-name','v-dish','v-addr','v-link','v-notes'].forEach(id => document.getElementById(id).value = '');
-    resetStars();
-    resetVerdict();
+    addStarPicker.reset();
+    addVerdictPicker.reset();
     renderList();
     toast('Vendor added ✓');
   }
@@ -548,6 +692,9 @@
               <span class="score-txt">${v.rating}/5</span>
               <button class="del-btn" onclick="removeVendor(${v.id})" aria-label="Remove ${esc(v.name)}">
                 <i class="ti ti-trash" aria-hidden="true"></i>
+              </button>
+              <button class="edit-btn" onclick="openEditModal(${v.id})" aria-label="Edit ${esc(v.name)}">
+                <i class="ti ti-pencil" aria-hidden="true"></i>
               </button>
             </div>
           </div>
