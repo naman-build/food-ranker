@@ -175,6 +175,28 @@
     .export-btn { background: none; border: 0.5px solid var(--border-strong); border-radius: var(--radius-sm); padding: 7px 14px; font-family: 'Inter', system-ui, sans-serif; font-size: 13px; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.12s; margin-left: auto; }
     .export-btn:hover { background: var(--border); }
 
+    /* ── Category toggle ── */
+    .category-toggle { display: flex; gap: 0; margin-bottom: 18px; border: 0.5px solid var(--border-strong); border-radius: var(--radius-sm); overflow: hidden; }
+    .cat-btn { flex: 1; padding: 9px; background: none; border: none; font-family: 'Inter', system-ui, sans-serif; font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: background 0.12s, color 0.12s; }
+    .cat-btn + .cat-btn { border-left: 0.5px solid var(--border-strong); }
+    .cat-btn.active.food  { background: var(--amber-light); color: var(--amber); }
+    .cat-btn.active.drink { background: var(--blue-light);  color: var(--blue); }
+
+    /* ── Category section headers in list ── */
+    .section-header { display: flex; align-items: center; gap: 10px; margin: 1.25rem 0 0.75rem; }
+    .section-header-label { font-size: 12px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.07em; white-space: nowrap; }
+    .section-header-line  { flex: 1; height: 0.5px; background: var(--border); }
+
+    /* ── Category pill on card ── */
+    .cat-pill { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 99px; letter-spacing: 0.03em; text-transform: uppercase; }
+    .cat-pill.food  { background: var(--amber-light); color: var(--amber); }
+    .cat-pill.drink { background: var(--blue-light);  color: var(--blue); }
+
+    /* ── Filter tabs ── */
+    .filter-tabs { display: flex; gap: 6px; margin-bottom: 1.25rem; }
+    .filter-tab { padding: 6px 14px; border-radius: 99px; border: 0.5px solid var(--border-strong); background: none; font-family: 'Inter', system-ui, sans-serif; font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: background 0.12s, color 0.12s; }
+    .filter-tab.active      { background: var(--text); color: var(--bg); border-color: var(--text); }
+
     .love-footer { text-align: center; padding: 2.5rem 1rem 1rem; font-size: 14px; color: var(--text-tertiary); }
 
     /* ── Edit modal ── */
@@ -239,6 +261,15 @@
       <h2>Edit vendor</h2>
       <button class="edit-modal-close" onclick="closeEditModal()" aria-label="Close">
         <i class="ti ti-x" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <div class="category-toggle" id="edit-cat-toggle" role="group" aria-label="Category">
+      <button type="button" class="cat-btn food active" data-cat="food">
+        <i class="ti ti-tools-kitchen-2" aria-hidden="true"></i> Food
+      </button>
+      <button type="button" class="cat-btn drink" data-cat="drink">
+        <i class="ti ti-glass-full" aria-hidden="true"></i> Drink
       </button>
     </div>
 
@@ -325,6 +356,16 @@
 
   <div class="card">
     <p class="card-title">Add a vendor</p>
+
+    <div class="category-toggle" id="add-cat-toggle" role="group" aria-label="Category">
+      <button type="button" class="cat-btn food active" data-cat="food">
+        <i class="ti ti-tools-kitchen-2" aria-hidden="true"></i> Food
+      </button>
+      <button type="button" class="cat-btn drink" data-cat="drink">
+        <i class="ti ti-glass-full" aria-hidden="true"></i> Drink
+      </button>
+    </div>
+
     <div class="form-grid">
       <div class="field">
         <label for="v-name">Vendor / restaurant name</label>
@@ -395,6 +436,11 @@
   </div>
 
   <div id="controls-section" style="display:none">
+    <div class="filter-tabs" id="filter-tabs">
+      <button class="filter-tab active" data-filter="all">All</button>
+      <button class="filter-tab" data-filter="food"><i class="ti ti-tools-kitchen-2" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>Food</button>
+      <button class="filter-tab" data-filter="drink"><i class="ti ti-glass-full" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>Drink</button>
+    </div>
     <div class="controls">
       <span class="controls-label">Sort by</span>
       <select id="sort-select" onchange="renderList()">
@@ -592,8 +638,9 @@
     const addr  = document.getElementById('v-addr').value.trim();
     const notes = document.getElementById('v-notes').value.trim();
     const link  = normaliseLink(document.getElementById('v-link').value);
-    const rating  = addStarPicker.value;
-    const verdict = addVerdictPicker.value;
+    const rating    = addStarPicker.value;
+    const verdict   = addVerdictPicker.value;
+    const category  = addCatToggle.value;
     if (!name)    { alert('Please enter a vendor name.'); return; }
     if (!rating)  { alert('Please select a rating.');     return; }
     if (!verdict) { alert('Please select whether you would go back.'); return; }
@@ -603,7 +650,7 @@
     btn.innerHTML = '<i class="ti ti-loader" aria-hidden="true"></i> Saving…';
 
     const { data, error } = await db.from('vendors').insert([{
-      name, dish, addr, notes, link, rating, verdict, added: Date.now()
+      name, dish, addr, notes, link, rating, verdict, category, added: Date.now()
     }]).select();
 
     btn.disabled = false;
@@ -614,6 +661,7 @@
     ['v-name','v-dish','v-addr','v-link','v-notes'].forEach(id => document.getElementById(id).value = '');
     addStarPicker.reset();
     addVerdictPicker.reset();
+    addCatToggle.reset();
     renderList();
     toast('Vendor added ✓');
   }
@@ -643,6 +691,7 @@
 
     editStarPicker.set(v.rating || 0);
     editVerdictPicker.set(v.verdict || '');
+    editCatToggle.set(v.category || 'food');
 
     document.getElementById('edit-modal-overlay').classList.remove('hidden');
   }
@@ -663,8 +712,9 @@
     const addr  = document.getElementById('e-addr').value.trim();
     const notes = document.getElementById('e-notes').value.trim();
     const link  = normaliseLink(document.getElementById('e-link').value);
-    const rating  = editStarPicker.value;
-    const verdict = editVerdictPicker.value;
+    const rating    = editStarPicker.value;
+    const verdict   = editVerdictPicker.value;
+    const category  = editCatToggle.value;
 
     if (!name)    { alert('Please enter a vendor name.'); return; }
     if (!rating)  { alert('Please select a rating.');     return; }
@@ -675,7 +725,7 @@
     btn.innerHTML = '<i class="ti ti-loader" aria-hidden="true"></i> Saving…';
 
     const { data, error } = await db.from('vendors')
-      .update({ name, dish, addr, notes, link, rating, verdict })
+      .update({ name, dish, addr, notes, link, rating, verdict, category })
       .eq('id', editingId)
       .select();
 
@@ -705,9 +755,47 @@
 
   const VERDICT_ORDER = { yes: 0, maybe: 1, no: 2, '': 3 };
 
+  /* ─── Category toggle factory ─── */
+  function createCategoryToggle(toggleEl) {
+    let value = 'food';
+    const btns = toggleEl.querySelectorAll('.cat-btn');
+    btns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        value = btn.dataset.cat;
+        btns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+    return {
+      get value() { return value; },
+      set: (val) => {
+        value = val || 'food';
+        btns.forEach(b => { b.classList.toggle('active', b.dataset.cat === value); });
+      },
+      reset: () => {
+        value = 'food';
+        btns.forEach(b => b.classList.toggle('active', b.dataset.cat === 'food'));
+      }
+    };
+  }
+
+  const addCatToggle  = createCategoryToggle(document.getElementById('add-cat-toggle'));
+  const editCatToggle = createCategoryToggle(document.getElementById('edit-cat-toggle'));
+
+  /* ─── Filter state ─── */
+  let activeFilter = 'all';
+  document.getElementById('filter-tabs').addEventListener('click', e => {
+    const tab = e.target.closest('.filter-tab');
+    if (!tab) return;
+    activeFilter = tab.dataset.filter;
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.toggle('active', t === tab));
+    renderList();
+  });
+
   function getSorted() {
     const sort = document.getElementById('sort-select').value;
-    return [...vendors].sort((a, b) => {
+    const filtered = activeFilter === 'all' ? vendors : vendors.filter(v => (v.category || 'food') === activeFilter);
+    return filtered.sort((a, b) => {
       if (sort === 'verdict') {
         const vo = VERDICT_ORDER[a.verdict||''] - VERDICT_ORDER[b.verdict||''];
         if (vo !== 0) return vo;
@@ -737,23 +825,40 @@
       document.getElementById('stat-top').textContent   = topV.name.length > 12 ? topV.name.slice(0,11)+'…' : topV.name;
     }
 
-    const sortVal = document.getElementById('sort-select').value;
+    const sortVal    = document.getElementById('sort-select').value;
     const isByRating = sortVal === 'rating' || sortVal === 'verdict';
+    const showSections = activeFilter === 'all';
 
-    document.getElementById('vendor-list').innerHTML = sorted.map((v, i) => {
-      const isTop = isByRating && i === 0 && vendors.length > 1;
-      const pct   = (v.rating / 5 * 100).toFixed(0);
+    // When showing all, group into food then drink sections
+    let rows = [];
+    if (showSections) {
+      const food  = sorted.filter(v => (v.category || 'food') === 'food');
+      const drink = sorted.filter(v => (v.category || 'food') === 'drink');
+      if (food.length)  rows.push({ type: 'header', label: '🍜 Food', key: 'food' }, ...food.map((v,i) => ({ type: 'card', v, rank: i+1, isTop: isByRating && i === 0 && food.length > 1 })));
+      if (drink.length) rows.push({ type: 'header', label: '🥤 Drink', key: 'drink' }, ...drink.map((v,i) => ({ type: 'card', v, rank: i+1, isTop: isByRating && i === 0 && drink.length > 1 })));
+    } else {
+      rows = sorted.map((v, i) => ({ type: 'card', v, rank: i+1, isTop: isByRating && i === 0 && sorted.length > 1 }));
+    }
+
+    document.getElementById('vendor-list').innerHTML = rows.map(row => {
+      if (row.type === 'header') {
+        return `<div class="section-header"><span class="section-header-label">${row.label}</span><div class="section-header-line"></div></div>`;
+      }
+      const { v, rank, isTop } = row;
+      const pct = (v.rating / 5 * 100).toFixed(0);
+      const cat = v.category || 'food';
       let linkLabel = '';
       if (v.link) { try { linkLabel = new URL(v.link).hostname.replace(/^www\./,''); } catch { linkLabel = v.link; } }
 
       return `
         <div class="vendor-card ${isTop ? 'gold-border' : ''}">
           <div class="vendor-top-row">
-            <span class="rank-badge">#${i+1}</span>
+            <span class="rank-badge">#${rank}</span>
             <div class="vendor-body">
               <div class="vendor-name-row">
                 <span class="vendor-name">${esc(v.name)}</span>
                 ${isTop ? '<span class="top-badge">Top pick</span>' : ''}
+                ${activeFilter === 'all' ? '' : `<span class="cat-pill ${cat}">${cat}</span>`}
                 ${verdictPillHTML(v.verdict)}
               </div>
               ${v.dish ? `<div class="vendor-dish"><i class="ti ti-tools-kitchen-2" style="font-size:13px" aria-hidden="true"></i> ${esc(v.dish)}</div>` : ''}
